@@ -1,0 +1,26 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background-color: indianred;
+}
+
+svg {
+  width: 500px;
+  height: 500px;
+  margin: auto;
+  border: 1px solid black;
+}
+
+svg.game g.cell line.arm {
+  stroke: black;
+  stroke-linecap: butt;
+  stroke-width: 0.2;
+}
+
+svg.game g.cell line.center {
+  stroke: black;
+  stroke-linecap: square;
+  stroke-width: 0.2;
+}
