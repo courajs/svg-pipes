@@ -20,7 +20,14 @@ class Game {
     }
     this.fix_arms();
     this.flow();
-    setTimeout(this.check_victory.bind(this), 0);
+    // Without the *double* rAF, the victory alert can pop
+    // before the final flow renders, meaning the maze
+    // behind the popup isn't fully solved. Takes away
+    // a little bit of the satisfaction...
+    // Not sure why a single rAF doesn't work :(
+    requestAnimationFrame(() => {
+      requestAnimationFrame(this.check_victory.bind(this));
+    });
   }
 
   check_victory() {
