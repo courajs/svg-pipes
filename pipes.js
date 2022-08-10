@@ -13,6 +13,7 @@ class Game {
   }
 
   on_mousedown(cell, el, event) {
+    event.preventDefault();
     if (event.button === 2) {
       cell.cw();
     } else if (event.button === 0) {
@@ -89,6 +90,7 @@ class Game {
         `);
         r[col] = cell;
         svg.appendChild(cell);
+        cell.addEventListener('touchstart', this.on_mousedown.bind(this, this.board.rows[row][col], cell));
         cell.addEventListener('mousedown', this.on_mousedown.bind(this, this.board.rows[row][col], cell));
         cell.addEventListener('contextmenu', (e) => e.preventDefault());
       }
