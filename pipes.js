@@ -51,6 +51,12 @@ class Game {
     for (let c of this.board.cells) {
       let el = this.cell_els[c.row][c.col];
       el.querySelector('g.arms').innerHTML = arms_for(c);
+      // Was noticing rendering issues where sometimes the arms
+      // would render *behind* the cell background. Maybe changing
+      // innerHTML causes something to be rendered first? But it
+      // appears only sometimes. I suspect this may be a Safari
+      // bug. But this workaround fixes it:
+      el.innerHTML = el.innerHTML;
     }
   }
   shuffle() {
