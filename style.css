@@ -3,7 +3,7 @@
 }
 
 html {
-  background-color: indianred;
+  background-color: #ece9e2;
 }
 
 svg {
@@ -27,5 +27,12 @@ svg.game g.cell line.center {
 
 svg.game g.cell .cell-background {
   stroke: black;
-  stroke-width: 0.02;
+  stroke-width: 0.01;
+  fill: coral;
+  /* fill: #ff7f50; */
+}
+
+svg.game g.cell.filled .arm,
+svg.game g.cell.filled .center {
+  stroke: aquamarine;
 }

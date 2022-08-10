@@ -11,6 +11,13 @@ class Game {
     this.el = root_el;
   }
 
+  flow() {
+    var filled = this.board.filled();
+    for (let c of this.board.cells) {
+      this.cell_els[c.row][c.col].classList.toggle('filled', filled.has(c));
+    }
+  }
+
   init() {
     let scale_factor = 1 / this.board.width;
 
@@ -22,31 +29,34 @@ class Game {
       let r = new Array(this.board.width);
       this.cell_els[row] = r;
       for (let col=0; col<this.board.width; col++) {
-        let g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        g.setAttribute("class", "cell");
-        let kids = [
-          '<rect class="cell-background" x="0" y="0" width="1" height="1" fill="coral"/>',
+        let cell = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        cell.setAttribute("class", "cell");
+        cell.innerHTML = [
+          '<rect class="cell-background" x="0" y="0" width="1" height="1"/>',
           '<line class="center" x1="0.5" y1="0.5" x2="0.5" y2="0.5"/>',
-        ];
+          '<g class="arms"></g>',
+        ].join('');
+        let arms = [];
         if (this.board.rows[row][col].up) {
-          kids.push('<line class="arm" x1="0.5" x2="0.5" y1="0" y2="0.5"/>');
+          arms.push('<line class="arm" x1="0.5" x2="0.5" y1="0" y2="0.5"/>');
         }
         if (this.board.rows[row][col].down) {
-          kids.push('<line class="arm" x1="0.5" x2="0.5" y1="1" y2="0.5"/>');
+          arms.push('<line class="arm" x1="0.5" x2="0.5" y1="1" y2="0.5"/>');
         }
         if (this.board.rows[row][col].right) {
-          kids.push('<line class="arm" x1="0.5" x2="1" y1="0.5" y2="0.5"/>');
+          arms.push('<line class="arm" x1="0.5" x2="1" y1="0.5" y2="0.5"/>');
         }
         if (this.board.rows[row][col].left) {
-          kids.push('<line class="arm" x1="0.5" x2="0" y1="0.5" y2="0.5"/>');
+          arms.push('<line class="arm" x1="0.5" x2="0" y1="0.5" y2="0.5"/>');
         }
-        g.innerHTML = kids.join('');
-        g.setAttribute('transform', `
+        let g = cell.querySelector('g.arms');
+        g.innerHTML = arms.join('');
+        cell.setAttribute('transform', `
             scale(${scale_factor})
             translate(${col}, ${row})
         `);
-        r[col] = g;
-        svg.appendChild(g);
+        r[col] = cell;
+        svg.appendChild(cell);
       }
     }
 
@@ -75,6 +85,27 @@ class Board {
     }
   }
 
+  get cells() {
+    return this.rows.flat();
+  }
+  get center() {
+    return this.rows[Math.ceil(this.height/2)-1][Math.ceil(this.width/2)-1];
+  }
+
+  filled() {
+    let empty = new Set(this.cells);
+    let flowing = new Set();
+    let filled = new Set();
+    shuttle([this.center], empty, flowing);
+
+    while (flowing.size) {
+      let c = pluck(flowing);
+      shuttle(this.flow_neighbors(c), empty, flowing);
+      filled.add(c);
+    }
+    return filled;
+  }
+
   neighbors(cell) {
     var result = new Set();
     var {row, col} = cell;
@@ -89,6 +120,36 @@ class Board {
     }
     if (col < (this.width-1)) {
       result.add(this.rows[row][col+1]);
+    }
+    return result;
+  }
+
+  flow_neighbors(cell) {
+    var result = new Set();
+    var {row, col} = cell;
+    if (row > 0) {
+      let n = this.rows[row-1][col];
+      if (cell.up && n.down) {
+        result.add(n);
+      }
+    }
+    if (row < (this.height-1)) {
+      let n = this.rows[row+1][col];
+      if (cell.down && n.up) {
+        result.add(n);
+      }
+    }
+    if (col > 0) {
+      let n = this.rows[row][col-1];
+      if (cell.left && n.right) {
+        result.add(n);
+      }
+    }
+    if (col < (this.width-1)) {
+      let n = this.rows[row][col+1];
+      if (cell.right && n.left) {
+        result.add(n);
+      }
     }
     return result;
   }
@@ -214,4 +275,4 @@ var game = new Game(b, el);
 game.init();
 console.log(game);
 
-
+setTimeout(()=>{game.flow();}, 500);
