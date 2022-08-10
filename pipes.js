@@ -13,9 +13,9 @@ class Game {
   }
 
   on_mousedown(cell, el, event) {
-    if (event.button === 0) {
+    if (event.button === 2) {
       cell.cw();
-    } else if (event.button === 2) {
+    } else if (event.button === 0) {
       cell.ccw();
     }
     this.fix_arms();
