@@ -6,10 +6,25 @@ html {
   background-color: #ece9e2;
 }
 
-svg {
-  width: 500px;
-  height: 500px;
+#controls > * {
+  margin: 5px;
+  float: right;
+}
+#controls #new-game {
+  float: left;
+}
+#controls {
+  overflow: auto;
+}
+
+
+#game {
+  width: 80vmin;
+  height: 80vmin;
+  max-height: 1200px;
+  max-width: 1200px;
   margin: auto;
+  margin-top: 5vmin;
   border: 1px solid black;
 }
 

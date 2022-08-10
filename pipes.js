@@ -20,14 +20,17 @@ class Game {
     }
     this.fix_arms();
     this.flow();
-
-    this.check_victory();
+    if (!this.endgame) {
+      this.check_victory();
+    }
   }
 
   check_victory() {
-    // if (this.endgame) { return; }
     if (this.board.filled().size === this.board.cells.length) {
-      alert('you win :)');
+      this.endgame = true;
+      if (window.confirm('you win :)')) {
+        this.after();
+      }
     }
   }
 
@@ -313,12 +316,37 @@ function pluck(s) {
 // =====
 // Main
 // =====
-var b = new Board(5, 5);
-plumb_board(b);
+let game_size = window.localStorage.game_size || 7;
+let game_size_el = document.querySelector('#controls #game-size');
+game_size_el.innerHTML = game_size;
 
-var el = document.querySelector('#game');
-var game = new Game(b, el);
+let root_el = document.querySelector('#game');
+let board = new Board(game_size, game_size);
+plumb_board(board);
+let game = new Game(board, root_el, reset);
 game.init();
-console.log(game);
+document.querySelector('#controls #smaller-game').addEventListener('click', smaller);
+document.querySelector('#controls #larger-game').addEventListener('click', larger);
+document.querySelector('#controls #new-game').addEventListener('click', reset);
 
-setTimeout(()=>{game.flow();}, 500);
+function reset() {
+  root_el.innerHTML = '';
+  board = new Board(game_size, game_size);
+  plumb_board(board);
+  game = new Game(board, root_el, reset);
+  game.init();
+}
+function smaller() {
+  if (game_size > 3) {
+    game_size--;
+    game_size_el.innerHTML = game_size;
+    window.localStorage.game_size = game_size;
+    reset();
+  }
+}
+function larger() {
+  game_size++;
+  game_size_el.innerHTML = game_size;
+  window.localStorage.game_size = game_size;
+  reset();
+}
