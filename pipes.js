@@ -20,12 +20,11 @@ class Game {
     }
     this.fix_arms();
     this.flow();
-    if (!this.endgame) {
-      this.check_victory();
-    }
+    setTimeout(this.check_victory.bind(this), 0);
   }
 
   check_victory() {
+    if (this.endgame) { return; }
     if (this.board.filled().size === this.board.cells.length) {
       this.endgame = true;
       if (window.confirm('you win :)')) {
