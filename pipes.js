@@ -1,3 +1,99 @@
+// =====
+// Rendering
+// =====
+class Game {
+  board;    // Game state
+  el;       // root DOM element
+  cell_els; // 2d array of g elements corresponding to board cells
+
+  constructor(board, root_el) {
+    this.board = board;
+    this.el = root_el;
+  }
+
+  init() {
+    let scale_factor = 1 / this.board.width;
+
+    var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute('class', 'game');
+    svg.setAttribute('viewBox', '0 0 1 1');
+    this.cell_els = new Array(this.board.height);
+    for (let row=0; row<this.board.height; row++) {
+      let r = new Array(this.board.width);
+      this.cell_els[row] = r;
+      for (let col=0; col<this.board.width; col++) {
+        let g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.setAttribute("class", "cell");
+        let kids = [
+          '<rect class="cell-background" x="0" y="0" width="1" height="1" fill="coral"/>',
+          '<line class="center" x1="0.5" y1="0.5" x2="0.5" y2="0.5"/>',
+        ];
+        if (this.board.rows[row][col].up) {
+          kids.push('<line class="arm" x1="0.5" x2="0.5" y1="0" y2="0.5"/>');
+        }
+        if (this.board.rows[row][col].down) {
+          kids.push('<line class="arm" x1="0.5" x2="0.5" y1="1" y2="0.5"/>');
+        }
+        if (this.board.rows[row][col].right) {
+          kids.push('<line class="arm" x1="0.5" x2="1" y1="0.5" y2="0.5"/>');
+        }
+        if (this.board.rows[row][col].left) {
+          kids.push('<line class="arm" x1="0.5" x2="0" y1="0.5" y2="0.5"/>');
+        }
+        g.innerHTML = kids.join('');
+        g.setAttribute('transform', `
+            scale(${scale_factor})
+            translate(${col}, ${row})
+        `);
+        r[col] = g;
+        svg.appendChild(g);
+      }
+    }
+
+    this.el.appendChild(svg);
+  }
+}
+
+
+// =====
+// Game logic
+// =====
+class Board {
+  width = 0;
+  height = 0;
+  rows = [];
+
+  constructor(width, height) {
+    this.width = width;
+    this.height = height;
+    for (let row=0; row<height; row++) {
+      var r = new Array(width);
+      for (let col=0; col<width; col++) {
+        r[col] = new Cell(row, col);
+      }
+      this.rows.push(r);
+    }
+  }
+
+  neighbors(cell) {
+    var result = new Set();
+    var {row, col} = cell;
+    if (row > 0) {
+      result.add(this.rows[row-1][col]);
+    }
+    if (row < (this.height-1)) {
+      result.add(this.rows[row+1][col]);
+    }
+    if (col > 0) {
+      result.add(this.rows[row][col-1]);
+    }
+    if (col < (this.width-1)) {
+      result.add(this.rows[row][col+1]);
+    }
+    return result;
+  }
+}
+
 class Cell {
   up = false;
   right = false;
@@ -43,42 +139,6 @@ class Cell {
   }
 }
 
-class Board {
-  width = 0;
-  height = 0;
-  rows = [];
-
-  constructor(width, height) {
-    this.width = width;
-    this.height = height;
-    for (let row=0; row<height; row++) {
-      var r = new Array(width);
-      for (let col=0; col<width; col++) {
-        r[col] = new Cell(row, col);
-      }
-      this.rows.push(r);
-    }
-  }
-
-  neighbors(cell) {
-    var result = new Set();
-    var {row, col} = cell;
-    if (row > 0) {
-      result.add(this.rows[row-1][col]);
-    }
-    if (row < (this.height-1)) {
-      result.add(this.rows[row+1][col]);
-    }
-    if (col > 0) {
-      result.add(this.rows[row][col-1]);
-    }
-    if (col < (this.width-1)) {
-      result.add(this.rows[row][col+1]);
-    }
-    return result;
-  }
-}
-
 function plumb_board(board) {
   let pristine = new Set();
   let frontier = new Set();
@@ -105,9 +165,12 @@ function plumb_board(board) {
   }
 }
 
-var BOARD = new Board(5, 5);
-plumb_board(BOARD);
-console.log(BOARD);
+
+
+
+// ====
+// Set functions
+// ===
 
 // Move items between sets, only if they're actually
 // in the source set
@@ -138,3 +201,17 @@ function pluck(s) {
   s.delete(item);
   return item;
 }
+
+
+// =====
+// Main
+// =====
+var b = new Board(5, 5);
+plumb_board(b);
+
+var el = document.querySelector('#game');
+var game = new Game(b, el);
+game.init();
+console.log(game);
+
+

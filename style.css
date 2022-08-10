@@ -24,3 +24,8 @@ svg.game g.cell line.center {
   stroke-linecap: square;
   stroke-width: 0.2;
 }
+
+svg.game g.cell .cell-background {
+  stroke: black;
+  stroke-width: 0.02;
+}
