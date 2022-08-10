@@ -6,9 +6,29 @@ class Game {
   el;       // root DOM element
   cell_els; // 2d array of g elements corresponding to board cells
 
-  constructor(board, root_el) {
+  constructor(board, root_el, after) {
     this.board = board;
     this.el = root_el;
+    this.after = after;
+  }
+
+  on_mousedown(cell, el, event) {
+    if (event.button === 0) {
+      cell.cw();
+    } else if (event.button === 2) {
+      cell.ccw();
+    }
+    this.fix_arms();
+    this.flow();
+
+    this.check_victory();
+  }
+
+  check_victory() {
+    // if (this.endgame) { return; }
+    if (this.board.filled().size === this.board.cells.length) {
+      alert('you win :)');
+    }
   }
 
   flow() {
@@ -16,6 +36,23 @@ class Game {
     for (let c of this.board.cells) {
       this.cell_els[c.row][c.col].classList.toggle('filled', filled.has(c));
     }
+  }
+  fix_arms() {
+    for (let c of this.board.cells) {
+      let el = this.cell_els[c.row][c.col];
+      el.querySelector('g.arms').innerHTML = arms_for(c);
+    }
+  }
+  shuffle() {
+    for (let c of this.board.cells) {
+      let twists = Math.floor(4 * Math.random());
+      while (twists>0) {
+        c.cw();
+        twists--;
+      }
+    }
+    this.fix_arms();
+    this.flow();
   }
 
   init() {
@@ -36,33 +73,42 @@ class Game {
           '<line class="center" x1="0.5" y1="0.5" x2="0.5" y2="0.5"/>',
           '<g class="arms"></g>',
         ].join('');
-        let arms = [];
-        if (this.board.rows[row][col].up) {
-          arms.push('<line class="arm" x1="0.5" x2="0.5" y1="0" y2="0.5"/>');
-        }
-        if (this.board.rows[row][col].down) {
-          arms.push('<line class="arm" x1="0.5" x2="0.5" y1="1" y2="0.5"/>');
-        }
-        if (this.board.rows[row][col].right) {
-          arms.push('<line class="arm" x1="0.5" x2="1" y1="0.5" y2="0.5"/>');
-        }
-        if (this.board.rows[row][col].left) {
-          arms.push('<line class="arm" x1="0.5" x2="0" y1="0.5" y2="0.5"/>');
-        }
-        let g = cell.querySelector('g.arms');
-        g.innerHTML = arms.join('');
+        cell.querySelector('g.arms').innerHTML = arms_for(this.board.rows[row][col]);
         cell.setAttribute('transform', `
             scale(${scale_factor})
             translate(${col}, ${row})
         `);
         r[col] = cell;
         svg.appendChild(cell);
+        cell.addEventListener('mousedown', this.on_mousedown.bind(this, this.board.rows[row][col], cell));
+        cell.addEventListener('contextmenu', (e) => e.preventDefault());
       }
     }
 
     this.el.appendChild(svg);
+
+    this.shuffle();
   }
 }
+
+function arms_for(cell) {
+  let arms = [];
+  if (cell.up) {
+    arms.push('<line class="arm" x1="0.5" x2="0.5" y1="0" y2="0.5"/>');
+  }
+  if (cell.down) {
+    arms.push('<line class="arm" x1="0.5" x2="0.5" y1="1" y2="0.5"/>');
+  }
+  if (cell.right) {
+    arms.push('<line class="arm" x1="0.5" x2="1" y1="0.5" y2="0.5"/>');
+  }
+  if (cell.left) {
+    arms.push('<line class="arm" x1="0.5" x2="0" y1="0.5" y2="0.5"/>');
+  }
+  return arms.join('');
+}
+
+
 
 
 // =====
